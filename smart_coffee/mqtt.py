@@ -3,6 +3,7 @@ This modules handles abtracting the MQTT communication logic.
 """
 import paho.mqtt.client as mqtt
 from typing import Callable
+import model
 
 
 def _on_message_handler(client, callback_dict, message):
@@ -47,6 +48,14 @@ class MQTTClient:
         self.callback_dict[topic] = call_back
         self.client.subscribe(topic)
  
+    def publish(self, message: model.MQTTMessage):
+        """
+        Publish a message to a specific topic
+
+        :param message: The MQTT message to publish
+        """
+        self.client.publish(message.topic, payload=message.get_payload())
+
     def loop_forever(self):
         """
         Handles blocking and keeping the program looping and waiting for

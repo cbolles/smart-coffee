@@ -42,8 +42,8 @@ class CoffeeState(Enum):
     Represents the state that the coffee maker could be in. The state
     represents the immediate state of the coffee maker.
     """
-    ON = 1
-    OFF = 2
+    ON = "ON"
+    OFF = "OFF"
 
 
 class CoffeeStateMessage(MQTTMessage):
@@ -87,7 +87,7 @@ class CoffeeStateMessage(MQTTMessage):
         return CoffeeStateMessage(CoffeeState[state])
 
 
-class CoffeeTimer(MQTTMessage):
+class CoffeeTimerMessage(MQTTMessage):
     """
     The CoffeeTimer message contains information about a specific time when
     the coffee maker should turn on.
@@ -103,6 +103,7 @@ class CoffeeTimer(MQTTMessage):
         :param timestamp: The time in seconds when the coffee should be made
         :type timestamp: float
         """
+        super().__init__(self._message_topic)
         self.timestamp = timestamp
 
     def get_payload(self) -> bytes:
@@ -126,4 +127,55 @@ class CoffeeTimer(MQTTMessage):
         """
         payload_str = payload.decode('utf-8')
         time = float(parse.parse(cls._message_format, payload_str)['time'])
-        return CoffeeTimer(time)
+        return CoffeeTimerMessage(time)
+
+
+class CoffeeStatus(Enum):
+    """
+    Represents the status of the coffee
+    """
+    BREWING = "BREWINING"
+    FINISHED = "FINISHED"
+
+
+class CoffeeStatusMessage(MQTTMessage):
+    """
+    The CoffeeStatus message contains where the coffee is in the process of
+    brewing.
+    """
+    _message_format = 'status = {status}'
+    _message_topic = 'coffee/status'
+
+    def __init__(self, coffee_status: CoffeeStatus):
+        """
+        Create a coffee status message that is used for reporting the status
+        of the coffee.
+
+        :param coffee_status: The status of the coffee
+        :type coffee_status: CoffeeStatus
+        """
+        super().__init__(self._message_topic)
+        self.coffee_status = coffee_status
+
+    def get_payload(self) -> bytes:
+        """
+        Get the payload of the message that can be sent as an MQTT payload
+
+        :return: The byte representation of the payload
+        :rtype: bytes
+        """
+        encoded_str = self._message_format.format(status=self.coffee_status.value)
+        return bytes(encoded_str, "utf-8")
+
+    @classmethod
+    def parse_message(cls, payload: bytes):
+        """
+        Parse an MQTT message into a coffee status message
+
+        :param payload: The payload to parse
+        :type payload: bytes
+        :return: The parsed message of the coffee status
+        """
+        payload_str = payload.decode('utf-8')
+        status = CoffeeStatus[parse.parse(cls._message_format, payload_str)['status']]
+        return CoffeeStatusMessage(status)
