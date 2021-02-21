@@ -70,7 +70,7 @@ class CoffeeStateMessage(MQTTMessage):
         :return: The bytes representation of the payload
         :rtype: bytes
         """
-        encoded_str = _message_format.format(coffee_state=self.coffe_state.value)
+        encoded_str = self._message_format.format(coffee_state=self.coffe_state.value)
         return bytes(encoded_str, 'utf-8')
 
     @classmethod
@@ -85,3 +85,45 @@ class CoffeeStateMessage(MQTTMessage):
         payload_str = payload.decode('utf-8')
         state = parse.parse(cls._message_format, payload_str)['coffee_state']
         return CoffeeStateMessage(CoffeeState[state])
+
+
+class CoffeeTimer(MQTTMessage):
+    """
+    The CoffeeTimer message contains information about a specific time when
+    the coffee maker should turn on.
+    """
+    _message_format = 'time = {time}'
+    _message_topic = 'coffee/time'
+
+    def __init__(self, timestamp: float):
+        """
+        Create a coffee timer message that is used for setting the time for
+        the coffee to turn on
+        
+        :param timestamp: The time in seconds when the coffee should be made
+        :type timestamp: float
+        """
+        self.timestamp = timestamp
+
+    def get_payload(self) -> bytes:
+        """
+        Get the payload of the message that can be sent as an MQTT payload
+        
+        :return: The byte representation of the payload
+        :rtype: bytes
+        """
+        encoded_str = self._message_format.format(time=self.timestamp)
+        return bytes(encoded_str, 'utf-8')
+
+    @classmethod
+    def parse_message(cls, payload: bytes):
+        """
+        Parse an MQTT message into a coffee timer message
+
+        :param payload: The payload to parse
+        :type payload: bytes
+        :return: The parse message of the coffee state
+        """
+        payload_str = payload.decode('utf-8')
+        time = float(parse.parse(cls._message_format, payload_str)['time'])
+        return CoffeeTimer(time)
