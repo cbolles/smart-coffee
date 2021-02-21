@@ -12,11 +12,11 @@ def indicate_coffee_done(message):
     """
     Handles flashing the LED to indicate that the coffee is ready 
     """
-    for i in range(0, 10):
+    for i in range(0, 5):
         coffee_indicator.on()
-        time.sleep(1)
+        time.sleep(0.5)
         coffee_indicator.off()
-        time.sleep(1)
+        time.sleep(0.5)
 
 
 if __name__ == '__main__':

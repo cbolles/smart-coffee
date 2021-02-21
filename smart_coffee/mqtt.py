@@ -34,7 +34,7 @@ class MQTTClient:
 
         self.client = mqtt.Client(userdata=self.callback_dict)
         self.client.on_message = _on_message_handler
-        self.client.connect(hostname, port, 20)
+        self.client.connect(hostname, port, 60)
         
     def subscribe(self, topic: str, call_back):
         """
